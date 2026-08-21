@@ -14,6 +14,14 @@
 </head>
 <body>
     <div id="admin-app">
+        <!-- Auth Check -->
+        <script>
+            if (!Auth || !Auth.requireAuth()) {
+                document.write('');
+                document.close();
+            }
+        </script>
+
         <!-- Admin Header -->
         <header class="admin-header">
             <div class="admin-header-inner">
@@ -37,6 +45,7 @@
                 <button class="admin-tab" data-tab="items">Menu Items</button>
                 <button class="admin-tab" data-tab="settings">Restaurant Settings</button>
                 <button class="admin-tab" data-tab="qr">QR Code</button>
+                <button class="admin-tab" data-tab="admins">Admins</button>
                 <button class="admin-tab" data-tab="data">Data</button>
             </div>
         </nav>
@@ -207,8 +216,74 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- Admins Tab -->
+                <section id="tab-admins" class="admin-tab-content">
+                    <div class="admin-card">
+                        <div class="admin-card-header">
+                            <h2>Admin Management</h2>
+                            <button id="add-admin-btn" class="btn btn-primary btn-sm">+ Add Admin</button>
+                        </div>
+                        <p class="admin-hint">Manage administrator accounts, roles, and permissions. Only Super Admins can manage other admins.</p>
+                        <ul id="admin-list" class="admin-list"></ul>
+                    </div>
+
+                    <div class="admin-card">
+                        <h2>Change Password</h2>
+                        <form id="change-password-form" class="form">
+                            <div class="form-group">
+                                <label for="current-password">Current Password</label>
+                                <input id="current-password" type="password" required placeholder="Enter current password">
+                            </div>
+                            <div class="form-group">
+                                <label for="new-password">New Password</label>
+                                <input id="new-password" type="password" required placeholder="Enter new password" minlength="6">
+                            </div>
+                            <div class="form-group">
+                                <label for="confirm-password">Confirm New Password</label>
+                                <input id="confirm-password" type="password" required placeholder="Confirm new password" minlength="6">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
+                    </div>
+                </section>
             </div>
         </main>
+    </div>
+
+    <!-- Admin Modal (for add/edit admin) -->
+    <div id="admin-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <button class="modal-close" aria-label="Close">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            </button>
+            <div class="modal-body">
+                <h2 id="admin-modal-title" class="modal-title">Add Admin</h2>
+                <form id="admin-form" class="form">
+                    <div class="form-group">
+                        <label for="admin-username">Username</label>
+                        <input id="admin-username" type="text" required placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-password">Password</label>
+                        <input id="admin-password" type="password" required placeholder="Enter password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-role">Role</label>
+                        <select id="admin-role">
+                            <option value="editor">Editor</option>
+                            <option value="admin">Admin</option>
+                            <option value="super_admin">Super Admin</option>
+                        </select>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Admin</button>
+                        <button type="button" class="btn btn-secondary" id="admin-cancel">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <!-- Section Modal -->
@@ -280,6 +355,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <script src="js/data.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/admin-panel.js"></script>

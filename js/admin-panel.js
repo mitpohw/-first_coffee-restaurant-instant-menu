@@ -18,9 +18,13 @@
 
     // Init
     function init() {
+        if (!Auth.requireAuth()) return;
+        
         data = Storage.load();
         bindEvents();
         renderAll();
+        renderAdmins();
+        setupPermissionUI();
     }
 
     function bindEvents() {
@@ -79,11 +83,24 @@
         $('#qr-print-btn')?.addEventListener('click', printQRPoster);
         $('#qr-download-btn')?.addEventListener('click', downloadQRCode);
 
+        // Admins
+        $('#add-admin-btn')?.addEventListener('click', () => openAdminModal());
+        $('#admin-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveAdmin();
+        });
+        $('#admin-cancel')?.addEventListener('click', closeAdminModal);
+        $('#change-password-form')?.addEventListener('submit', (e) => {
+            e.preventDefault();
+            changePassword();
+        });
+
         // Modal close buttons
         $$('.modal-close').forEach(btn => {
             btn.addEventListener('click', () => {
                 closeSectionModal();
                 closeItemModal();
+                closeAdminModal();
             });
         });
 
@@ -92,6 +109,7 @@
             overlay.addEventListener('click', () => {
                 closeSectionModal();
                 closeItemModal();
+                closeAdminModal();
             });
         });
 
@@ -100,6 +118,7 @@
             if (e.key === 'Escape') {
                 closeSectionModal();
                 closeItemModal();
+                closeAdminModal();
             }
         });
     }
@@ -549,6 +568,7 @@
         renderSections();
         renderItems();
         renderSettings();
+        renderAdmins();
         updateItemSectionFilter();
     }
 
@@ -563,8 +583,230 @@
     }
 
     // =====================
-    // QR CODE GENERATOR
+    // AUTH & ADMINS
     // =====================
+
+    function renderAdmins() {
+        const list = $('#admin-list');
+        if (!list) return;
+
+        const admins = Auth.getAllAdmins();
+        const currentSession = Auth.getSession();
+
+        if (admins.length === 0) {
+            list.innerHTML = '<li class="admin-list-item"><span class="admin-list-item-name" style="color:#7A6A5E;">No admins found</span></li>';
+            return;
+        }
+
+        list.innerHTML = admins.map(admin => {
+            const canEdit = Auth.isSuperAdmin() && admin.id !== currentSession?.id;
+            const roleLabel = admin.role.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+            
+            return `
+                <li class="admin-list-item" data-id="${Utils.escapeHtml(admin.id)}">
+                    <div class="admin-list-item-info">
+                        <div class="admin-list-item-name">
+                            ${Utils.escapeHtml(admin.username)}
+                            ${admin.id === currentSession?.id ? '<span style="color:#D4A373;font-size:0.75rem;margin-left:0.5rem;">(You)</span>' : ''}
+                        </div>
+                        <div class="admin-list-item-meta">
+                            ${roleLabel}
+                            · ${admin.hasPassword ? 'Password set' : 'No password'}
+                            ${admin.mustChangePassword ? ' · Must change password' : ''}
+                        </div>
+                    </div>
+                    <div class="admin-list-actions">
+                        ${canEdit ? `
+                            <button class="admin-btn-icon" data-action="edit" title="Edit" aria-label="Edit admin">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                            </button>
+                            <button class="admin-btn-icon delete" data-action="delete" title="Delete" aria-label="Delete admin">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        ` : ''}
+                    </div>
+                </li>`;
+        }).join('');
+
+        // Bind admin actions
+        list.querySelectorAll('.admin-btn-icon').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const li = btn.closest('.admin-list-item');
+                const id = li?.dataset.id;
+                const action = btn.dataset.action;
+                if (!id) return;
+
+                if (action === 'edit') editAdmin(id);
+                if (action === 'delete') deleteAdmin(id);
+            });
+        });
+    }
+
+    function openAdminModal(admin = null) {
+        if (!Auth.isSuperAdmin()) {
+            showToast('Only Super Admins can manage admins', 'error');
+            return;
+        }
+
+        const modal = $('#admin-modal');
+        const title = $('#admin-modal-title');
+        const form = $('#admin-form');
+
+        if (!modal || !form) return;
+
+        title.textContent = admin ? 'Edit Admin' : 'Add Admin';
+        form.reset();
+
+        if (admin) {
+            $('#admin-username').value = admin.username || '';
+            $('#admin-role').value = admin.role || 'editor';
+            $('#admin-password').required = false;
+            $('#admin-password').placeholder = 'Leave blank to keep current password';
+        } else {
+            $('#admin-username').value = '';
+            $('#admin-role').value = 'editor';
+            $('#admin-password').required = true;
+            $('#admin-password').placeholder = 'Enter password';
+        }
+
+        modal.hidden = false;
+        requestAnimationFrame(() => modal.classList.add('show'));
+        $('#admin-username')?.focus();
+    }
+
+    function closeAdminModal() {
+        const modal = $('#admin-modal');
+        if (modal) {
+            modal.classList.remove('show');
+            setTimeout(() => { modal.hidden = true; }, 300);
+        }
+    }
+
+    async function saveAdmin() {
+        if (!Auth.isSuperAdmin()) {
+            showToast('Only Super Admins can manage admins', 'error');
+            return;
+        }
+
+        const username = $('#admin-username')?.value.trim();
+        const password = $('#admin-password')?.value;
+        const role = $('#admin-role')?.value;
+
+        if (!username) {
+            showToast('Username is required', 'error');
+            return;
+        }
+
+        const editingId = $('#admin-modal').dataset.editingId;
+
+        if (editingId) {
+            const result = Auth.updateAdminRole(editingId, role);
+            if (result.success) {
+                if (password) {
+                    const pwResult = await Auth.changePassword(editingId, password);
+                    if (!pwResult.success) {
+                        showToast('Password update failed', 'error');
+                        return;
+                    }
+                }
+                showToast('Admin updated');
+            } else {
+                showToast(result.message || 'Update failed', 'error');
+            }
+        } else {
+            if (!password) {
+                showToast('Password is required for new admin', 'error');
+                return;
+            }
+            const result = Auth.addAdmin(username, role);
+            if (result.success) {
+                const pwResult = await Auth.changePassword(result.admin.id, password);
+                if (!pwResult.success) {
+                    showToast('Admin created but password setup failed', 'error');
+                    return;
+                }
+                showToast('Admin added');
+            } else {
+                showToast(result.message || 'Add failed', 'error');
+            }
+        }
+
+        closeAdminModal();
+        renderAdmins();
+    }
+
+    function editAdmin(id) {
+        const admins = Auth.getAllAdmins();
+        const admin = admins.find(a => a.id === id);
+        if (admin) {
+            const modal = $('#admin-modal');
+            if (modal) modal.dataset.editingId = id;
+            openAdminModal(admin);
+        }
+    }
+
+    function deleteAdmin(id) {
+        if (!confirm('Delete this admin? This action cannot be undone.')) return;
+        const result = Auth.removeAdmin(id);
+        if (result.success) {
+            showToast('Admin deleted');
+            renderAdmins();
+        } else {
+            showToast(result.message || 'Delete failed', 'error');
+        }
+    }
+
+    async function changePassword() {
+        const current = $('#current-password')?.value;
+        const newPass = $('#new-password')?.value;
+        const confirm = $('#confirm-password')?.value;
+
+        if (!current || !newPass || !confirm) {
+            showToast('Please fill in all password fields', 'error');
+            return;
+        }
+
+        if (newPass !== confirm) {
+            showToast('New passwords do not match', 'error');
+            return;
+        }
+
+        if (newPass.length < 6) {
+            showToast('Password must be at least 6 characters', 'error');
+            return;
+        }
+
+        const session = Auth.getSession();
+        if (!session) return;
+
+        const result = await Auth.changePassword(session.id, newPass);
+        if (result.success) {
+            showToast('Password updated successfully');
+            $('#change-password-form').reset();
+        } else {
+            showToast('Password update failed', 'error');
+        }
+    }
+
+    function setupPermissionUI() {
+        const session = Auth.getSession();
+        if (!session) return;
+
+        const isSuperAdmin = Auth.isSuperAdmin();
+        
+        // Hide/show tabs based on role
+        const adminsTab = document.querySelector('[data-tab="admins"]');
+        if (adminsTab) {
+            adminsTab.style.display = isSuperAdmin ? '' : 'none';
+        }
+
+        const dataTab = document.querySelector('[data-tab="data"]');
+        if (dataTab) {
+            const canManageData = Auth.hasPermission('manage_settings') || isSuperAdmin;
+            dataTab.style.display = canManageData ? '' : 'none';
+        }
+    }
 
     function generateQRCode() {
         const urlInput = $('#qr-url');

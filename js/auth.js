@@ -136,19 +136,27 @@ const Auth = {
     },
 
     async login(username, password) {
+        if (!username || !password) {
+            return { success: false, message: 'Please enter both username and password', code: 'empty' };
+        }
+
         const data = this.getAdmins();
         const admin = data.admins.find(a => a.username === username);
-        
-        if (!admin || !admin.passwordHash) {
-            return { success: false, message: 'Invalid credentials' };
+
+        if (!admin) {
+            return { success: false, message: 'Username not found', code: 'username_not_found' };
         }
-        
+
+        if (!admin.passwordHash) {
+            return { success: false, message: 'Account not set up. Contact administrator.', code: 'not_setup' };
+        }
+
         const isValid = await this.verifyPassword(password, admin.passwordHash, admin.salt);
-        
+
         if (!isValid) {
-            return { success: false, message: 'Invalid credentials' };
+            return { success: false, message: 'Incorrect password', code: 'wrong_password' };
         }
-        
+
         const session = {
             id: admin.id,
             username: admin.username,
@@ -156,9 +164,9 @@ const Auth = {
             loginAt: new Date().toISOString(),
             expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
         };
-        
+
         localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-        
+
         return {
             success: true,
             session: session,
@@ -220,17 +228,28 @@ const Auth = {
         return this.hasRole(this.ROLES.SUPER_ADMIN);
     },
 
-    async changePassword(adminId, newPassword) {
+    async changePassword(adminId, newPassword, currentPassword) {
         const data = this.getAdmins();
         const admin = data.admins.find(a => a.id === adminId);
-        
+
         if (!admin) return { success: false, message: 'Admin not found' };
-        
+
+        if (currentPassword && admin.passwordHash) {
+            const isValid = await this.verifyPassword(currentPassword, admin.passwordHash, admin.salt);
+            if (!isValid) {
+                return { success: false, message: 'Current password is incorrect' };
+            }
+        }
+
+        if (newPassword.length < 6) {
+            return { success: false, message: 'Password must be at least 6 characters' };
+        }
+
         const { hash, salt } = await this.hashPassword(newPassword);
         admin.passwordHash = hash;
         admin.salt = salt;
         admin.mustChangePassword = false;
-        
+
         const saved = this.saveAdmins(data);
         return { success: saved };
     },

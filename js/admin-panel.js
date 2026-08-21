@@ -19,7 +19,12 @@
     // Init
     function init() {
         if (!Auth.requireAuth()) return;
-        
+
+        const app = $('#admin-app');
+        if (app) {
+            app.style.display = '';
+        }
+
         data = Storage.load();
         bindEvents();
         renderAll();
@@ -780,12 +785,12 @@
         const session = Auth.getSession();
         if (!session) return;
 
-        const result = await Auth.changePassword(session.id, newPass);
+        const result = await Auth.changePassword(session.id, newPass, current);
         if (result.success) {
             showToast('Password updated successfully');
             $('#change-password-form').reset();
         } else {
-            showToast('Password update failed', 'error');
+            showToast(result.message || 'Password update failed', 'error');
         }
     }
 

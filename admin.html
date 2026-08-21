@@ -13,14 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="admin-app">
-        <!-- Auth Check -->
-        <script>
-            if (!Auth || !Auth.requireAuth()) {
-                document.write('');
-                document.close();
-            }
-        </script>
+    <div id="admin-app" style="display:none;">
+        <!-- Auth Check handled by admin-panel.js -->
 
         <!-- Admin Header -->
         <header class="admin-header">

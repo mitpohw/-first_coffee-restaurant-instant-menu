@@ -1,0 +1,699 @@
+/* ============================================
+   ADMIN PANEL STYLES
+   First Coffee Restaurant — Menu Manager
+   ============================================ */
+
+/* Admin Layout */
+.admin-header {
+    background: #0a0a0a;
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.admin-header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.admin-brand-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.admin-brand-tagline {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+}
+
+.admin-header-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Admin Tabs */
+.admin-tabs {
+    background: #fff;
+    border-bottom: 1px solid #E8E0D8;
+    position: sticky;
+    top: 65px;
+    z-index: 90;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+}
+
+.admin-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.admin-tabs-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    gap: 0.25rem;
+    min-width: max-content;
+}
+
+.admin-tab {
+    padding: 1rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    color: #6B5B4F;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.admin-tab:hover {
+    color: #2C1810;
+    background: #FAF7F2;
+}
+
+.admin-tab.active {
+    color: #4A2C2A;
+    border-bottom-color: #D4A373;
+}
+
+/* Admin Main */
+.admin-main {
+    padding: 2rem 0 4rem;
+}
+
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.admin-tab-content {
+    display: none;
+}
+
+.admin-tab-content.active {
+    display: block;
+}
+
+/* Admin Card */
+.admin-card {
+    background: #fff;
+    border: 1px solid #E8E0D8;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.admin-card h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #4A2C2A;
+    margin-bottom: 0.5rem;
+}
+
+.admin-hint {
+    font-size: 0.8rem;
+    color: #7A6A5E;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+}
+
+/* Forms */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+}
+
+@media (min-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.form-group label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #6B5B4F;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    padding: 0.7rem 0.85rem;
+    font-size: 0.95rem;
+    font-family: inherit;
+    border: 1px solid #E8E0D8;
+    border-radius: 10px;
+    background: #FAF7F2;
+    color: #2C1810;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #D4A373;
+    box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.15);
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+/* Admin List */
+.admin-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+
+.admin-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: #FAF7F2;
+    border: 1px solid #E8E0D8;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.admin-list-item:hover {
+    border-color: #D4A373;
+    box-shadow: 0 2px 8px rgba(212, 163, 115, 0.1);
+}
+
+.admin-list-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-list-item-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #2C1810;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-list-item-meta {
+    font-size: 0.75rem;
+    color: #7A6A5E;
+    margin-top: 0.15rem;
+}
+
+.admin-list-actions {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+}
+
+.admin-btn-icon {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    color: #6B5B4F;
+    transition: all 0.2s ease;
+}
+
+.admin-btn-icon:hover {
+    background: #E8E0D8;
+    color: #4A2C2A;
+}
+
+.admin-btn-icon:focus-visible {
+    outline: 2px solid #D4A373;
+    outline-offset: 1px;
+}
+
+.admin-btn-icon.delete:hover {
+    background: #FADBD8;
+    color: #C0392B;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.65rem 1.1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background: #4A2C2A;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #3A221F;
+}
+
+.btn-secondary {
+    background: #FAF7F2;
+    color: #4A2C2A;
+    border: 1px solid #E8E0D8;
+}
+
+.btn-secondary:hover {
+    background: #E8E0D8;
+}
+
+.btn-danger {
+    background: #C0392B;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #A93226;
+}
+
+.btn-sm {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.8rem;
+}
+
+.btn:focus-visible {
+    outline: 2px solid #D4A373;
+    outline-offset: 2px;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.modal[hidden] {
+    display: none !important;
+}
+
+.modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(44, 24, 16, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal.show .modal-overlay {
+    opacity: 1;
+}
+
+.modal-content {
+    position: relative;
+    background: #fff;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 1.75rem;
+    box-shadow: 0 8px 24px rgba(44, 24, 16, 0.15);
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: #FAF7F2;
+    border-radius: 50%;
+    cursor: pointer;
+    color: #4A2C2A;
+    transition: background 0.2s ease;
+}
+
+.modal-close:hover {
+    background: #E8E0D8;
+}
+
+.modal-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4A2C2A;
+    margin-bottom: 1.25rem;
+    padding-right: 2.5rem;
+}
+
+/* Toast */
+.toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #4A2C2A;
+    color: #fff;
+    padding: 0.85rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(44, 24, 16, 0.2);
+    z-index: 1100;
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+    white-space: nowrap;
+    max-width: calc(100vw - 2rem);
+    text-align: center;
+}
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.toast.error {
+    background: #C0392B;
+}
+
+/* QR Generator */
+.qr-generator-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.qr-result {
+    border-top: 1px solid #E8E0D8;
+    padding-top: 1.5rem;
+}
+
+.qr-preview-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.qr-poster-preview {
+    background: #fff;
+    border: 1px solid #E8E0D8;
+    border-radius: 24px;
+    padding: 2.5rem;
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(44, 24, 16, 0.08);
+}
+
+.qr-poster-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .qr-poster-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.qr-poster-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 1.25rem;
+}
+
+.qr-poster-right {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-logo-placeholder {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 0.75rem;
+    background: #FAF7F2;
+    border: 2px dashed #E8E0D8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #D4A373;
+}
+
+.qr-restaurant-name {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #4A2C2A;
+    margin: 0;
+}
+
+.qr-code-wrapper {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.qr-code-img {
+    display: block;
+    max-width: 280px;
+    width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.qr-logo-cutout {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px;
+    height: 64px;
+    background: #fff;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4A2C2A;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.qr-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    background: #4A2C2A;
+    color: #fff;
+    border-radius: 50%;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 4px 12px rgba(74, 44, 42, 0.25);
+}
+
+.qr-badge-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    line-height: 1.3;
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.qr-instructions {
+    text-align: center;
+    color: #6B5B4F;
+}
+
+.qr-instructions-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: #4A2C2A;
+}
+
+.qr-instructions-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.8;
+}
+
+.qr-instructions-list li {
+    position: relative;
+    padding-left: 1.25rem;
+}
+
+.qr-instructions-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6rem;
+    width: 6px;
+    height: 6px;
+    background: #D4A373;
+    border-radius: 50%;
+}
+
+.qr-poster-footer {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E8E0D8;
+    text-align: center;
+}
+
+.qr-poster-footer p {
+    font-size: 0.75rem;
+    color: #7A6A5E;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.qr-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* QR Print Styles */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #qr-result, #qr-result * {
+        visibility: visible;
+    }
+    #qr-result {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+    }
+    .qr-poster-preview {
+        border: none;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 2rem;
+        max-width: 100%;
+    }
+    .qr-actions {
+        display: none !important;
+    }
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .admin-header-inner {
+        padding: 0.875rem 1rem;
+    }
+    
+    .admin-tabs-inner {
+        padding: 0 1rem;
+    }
+    
+    .admin-container {
+        padding: 0 1rem;
+    }
+    
+    .admin-card {
+        padding: 1.25rem;
+        border-radius: 14px;
+    }
+    
+    .admin-list-item {
+        flex-wrap: wrap;
+    }
+    
+    .admin-list-actions {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

@@ -1,7 +1,7 @@
 const DEFAULT_RESTAURANT = {
     name: 'First Coffee',
     tagline: 'Restaurant',
-    address: 'Bole Road, Addis Ababa, Ethiopia',
+    address: 'Haya hulet Infront of Addis hiwot hospital , Addis Ababa, Ethiopia',
     phone: '+251 911 234 567',
     hours: 'Mon-Sun: 7:00 AM - 10:00 PM',
     currency: 'ETB',

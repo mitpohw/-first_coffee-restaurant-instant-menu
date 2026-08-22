@@ -218,18 +218,12 @@
             case 'username_not_found':
                 showFieldError('username', 'Username not found');
                 showGlobalError('No account found with this username');
-                if (usernameInput) {
-                    usernameInput.value = '';
-                    usernameInput.focus();
-                }
+                $('#login-username')?.focus();
                 break;
             case 'wrong_password':
                 showFieldError('password', 'Incorrect password');
                 showGlobalError('The password you entered is incorrect');
-                if (passwordInput) {
-                    passwordInput.value = '';
-                    passwordInput.focus();
-                }
+                $('#login-password')?.focus();
                 break;
             case 'not_setup':
                 showGlobalError('Account not configured. Contact administrator.');

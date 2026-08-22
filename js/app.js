@@ -24,11 +24,7 @@ const App = {
             Menu.renderFeatured();
         }, 200));
         document.getElementById('admin-toggle')?.addEventListener('click', () => {
-            if (this.isAdmin) {
-                this.showMenu();
-            } else {
-                this.showAdmin();
-            }
+            window.location.href = 'admin-login.html';
         });
         document.getElementById('back-to-top')?.addEventListener('click', () => {
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -36,17 +32,27 @@ const App = {
 
         window.addEventListener('scroll', Utils.debounce(() => {
             const btn = document.getElementById('back-to-top');
-            if (btn) btn.hidden = window.scrollY < 400;
+            const scrolled = window.scrollY > 400;
+            if (btn) btn.hidden = !scrolled;
             
             const header = document.querySelector('.site-header');
             const catNav = document.querySelector('.category-nav');
+            const isScrolled = window.scrollY > 12;
+            const progress = Math.min(window.scrollY / 120, 1);
+
             if (header) {
-                header.classList.toggle('scrolled', window.scrollY > 10);
+                header.classList.toggle('scrolled', isScrolled);
+                header.style.boxShadow = isScrolled
+                    ? `0 4px 24px rgba(26, 20, 18, ${progress * 0.08})`
+                    : 'none';
             }
             if (catNav) {
-                catNav.classList.toggle('scrolled', window.scrollY > 10);
+                catNav.classList.toggle('scrolled', isScrolled);
+                catNav.style.boxShadow = isScrolled
+                    ? `0 2px 16px rgba(26, 20, 18, ${progress * 0.06})`
+                    : 'none';
             }
-        }, 50), { passive: true });
+        }, 8), { passive: true });
 
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
@@ -69,43 +75,20 @@ const App = {
     showMenu() {
         this.isAdmin = false;
         const menuView = document.getElementById('menu-view');
-        const adminView = document.getElementById('admin-view');
         if (menuView) menuView.removeAttribute('hidden');
-        if (adminView) adminView.hidden = true;
         const adminToggle = document.getElementById('admin-toggle');
         if (adminToggle) adminToggle.setAttribute('aria-label', 'Admin panel');
-        history.replaceState(null, '', window.location.pathname + window.location.search.replace(/[?&]admin/, ''));
         Menu.data = this.data;
         Menu.init(this.data);
-        Admin.updateCategoryFilter();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     },
 
     showAdmin() {
-        this.isAdmin = true;
-        const menuView = document.getElementById('menu-view');
-        const adminView = document.getElementById('admin-view');
-        if (menuView) menuView.hidden = true;
-        if (adminView) adminView.removeAttribute('hidden');
-        const adminToggle = document.getElementById('admin-toggle');
-        if (adminToggle) adminToggle.setAttribute('aria-label', 'Exit admin');
-        history.replaceState(null, '', window.location.pathname + (window.location.search.includes('admin') ? '?admin' : '?admin'));
-        Admin.data = this.data;
-        Admin.init(this.data);
-        Admin.updateCategoryFilter();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.location.href = 'admin-login.html';
     },
 
     showMenuPreview() {
-        this.isAdmin = false;
-        const menuView = document.getElementById('menu-view');
-        const adminView = document.getElementById('admin-view');
-        if (menuView) menuView.removeAttribute('hidden');
-        if (adminView) adminView.hidden = true;
-        Menu.data = this.data;
-        Menu.init(this.data);
-        Admin.updateCategoryFilter();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        this.showMenu();
     },
 
     toggleSearch() {

@@ -30,6 +30,15 @@
         renderAll();
         renderAdmins();
         setupPermissionUI();
+
+        if (new URLSearchParams(window.location.search).has('change-password')) {
+            switchTab('admins');
+            const pwForm = $('#change-password-form');
+            if (pwForm) {
+                pwForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                showToast('Please change your password for security', '');
+            }
+        }
     }
 
     function bindEvents() {
@@ -39,8 +48,11 @@
         });
 
         // Header actions
-        $('#admin-exit')?.addEventListener('click', () => {
-            window.location.href = 'index.html';
+        $('#admin-logout')?.addEventListener('click', () => {
+            if (confirm('Are you sure you want to log out?')) {
+                Auth.logout();
+                window.location.href = 'admin-login.html';
+            }
         });
         $('#admin-preview')?.addEventListener('click', () => {
             window.location.href = 'index.html';
@@ -84,9 +96,25 @@
         });
 
         // QR Code
-        $('#qr-generate-btn')?.addEventListener('click', generateQRCode);
+        const genBtn = $('#qr-generate-btn');
+        if (genBtn) {
+            genBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                try {
+                    await generateQRCode();
+                } catch (err) {
+                    console.error('QR Click Error:', err);
+                    showToast('Click error: ' + err.message, 'error');
+                }
+            });
+        }
         $('#qr-print-btn')?.addEventListener('click', printQRPoster);
         $('#qr-download-btn')?.addEventListener('click', downloadQRCode);
+        $('#qr-logo')?.addEventListener('change', handleLogoUpload);
+        $('#qr-restaurant-display')?.addEventListener('input', (e) => {
+            const nameEl = $('#qr-restaurant-name');
+            if (nameEl) nameEl.textContent = e.target.value || (data.restaurant || {}).name || 'First Coffee Restaurant';
+        });
 
         // Admins
         $('#add-admin-btn')?.addEventListener('click', () => openAdminModal());
@@ -350,17 +378,33 @@
 
         list.innerHTML = items.map(item => {
             const section = data.categories.find(c => c.id === item.categoryId);
+            const isAvailable = item.available !== false;
+            const isFeatured = !!item.featured;
+
             return `
                 <li class="admin-list-item" data-id="${Utils.escapeHtml(item.id)}">
                     <div class="admin-list-item-info">
-                        <div class="admin-list-item-name">${Utils.escapeHtml(item.name) || '<em style="color:#7A6A5E;">Unnamed item</em>'}</div>
+                        <div class="admin-list-item-name">
+                            ${Utils.escapeHtml(item.name) || '<em style="color:#7A6A5E;">Unnamed item</em>'}
+                            ${isFeatured ? '<span class="status-badge featured" title="Featured">★</span>' : ''}
+                            ${!isAvailable ? '<span class="status-badge unavailable" title="Out of stock">Unavailable</span>' : ''}
+                        </div>
                         <div class="admin-list-item-meta">
                             ${Utils.formatPrice(item.price, data.restaurant.currency)}
                             · ${section ? Utils.escapeHtml(section.name) : 'Unknown section'}
-                            ${!item.available ? ' · Unavailable' : ''}
                         </div>
                     </div>
                     <div class="admin-list-actions">
+                        <button class="admin-btn-icon ${isFeatured ? 'active' : ''}" data-action="toggle-featured" title="${isFeatured ? 'Unfeature' : 'Feature'}" aria-label="Toggle featured">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="${isFeatured ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        </button>
+                        <button class="admin-btn-icon ${isAvailable ? '' : 'inactive'}" data-action="toggle-available" title="${isAvailable ? 'Mark Unavailable' : 'Mark Available'}" aria-label="Toggle availability">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                ${isAvailable
+                                    ? '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'
+                                    : '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'}
+                            </svg>
+                        </button>
                         <button class="admin-btn-icon" data-action="up" title="Move up" aria-label="Move up">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 15-6-6-6 6"/></svg>
                         </button>
@@ -387,6 +431,8 @@
                 if (!id) return;
 
                 switch (action) {
+                    case 'toggle-featured': toggleItemProperty(id, 'featured'); break;
+                    case 'toggle-available': toggleItemProperty(id, 'available'); break;
                     case 'up': moveItem(id, -1); break;
                     case 'down': moveItem(id, 1); break;
                     case 'edit': editItem(id); break;
@@ -411,6 +457,11 @@
             $('#i-name').value = item.name || '';
             $('#i-price').value = item.price || '';
             $('#i-section').value = item.categoryId || '';
+            $('#i-available').checked = item.available !== false;
+            $('#i-featured').checked = !!item.featured;
+        } else {
+            $('#i-available').checked = true;
+            $('#i-featured').checked = false;
         }
 
         updateItemSectionSelect();
@@ -432,6 +483,8 @@
         const name = $('#i-name')?.value.trim();
         const price = parseFloat($('#i-price')?.value) || 0;
         const categoryId = $('#i-section')?.value;
+        const available = $('#i-available')?.checked;
+        const featured = $('#i-featured')?.checked;
 
         if (!name) {
             showToast('Item name is required', 'error');
@@ -445,7 +498,7 @@
         if (editingItemId) {
             const idx = data.items.findIndex(i => i.id === editingItemId);
             if (idx >= 0) {
-                data.items[idx] = { ...data.items[idx], name, price, categoryId };
+                data.items[idx] = { ...data.items[idx], name, price, categoryId, available, featured };
             }
         } else {
             const maxOrder = data.items.reduce((m, i) => Math.max(m, i.order || 0), 0);
@@ -455,8 +508,8 @@
                 price,
                 categoryId,
                 order: maxOrder + 1,
-                available: true,
-                featured: false,
+                available: available !== false,
+                featured: !!featured,
                 popular: false
             });
         }
@@ -494,6 +547,21 @@
         data.items = items;
         Storage.save(data);
         renderItems();
+    }
+
+    function toggleItemProperty(id, property) {
+        const item = data.items.find(i => i.id === id);
+        if (!item) return;
+
+        if (property === 'available') {
+            item.available = item.available === false;
+        } else if (property === 'featured') {
+            item.featured = !item.featured;
+        }
+
+        Storage.save(data);
+        renderItems();
+        showToast(`Item ${property} status updated`);
     }
 
     // =====================
@@ -575,15 +643,31 @@
         renderSettings();
         renderAdmins();
         updateItemSectionFilter();
+        renderQrDefaults();
     }
+
+    function renderQrDefaults() {
+        const urlInput = $('#qr-url');
+        const displayInput = $('#qr-restaurant-display');
+        if (urlInput && !urlInput.value) {
+            urlInput.value = 'https://first-coffee-restaurant-instant-men.vercel.app/';
+        }
+        if (displayInput && data.restaurant && !displayInput.value) {
+            displayInput.value = data.restaurant.name || '';
+        }
+    }
+
+    let toastTimeout = null;
 
     function showToast(message, type = '') {
         const toast = $('#toast');
         if (!toast) return;
+        if (toastTimeout) clearTimeout(toastTimeout);
         toast.textContent = message;
         toast.className = 'toast show' + (type ? ' ' + type : '');
-        setTimeout(() => {
+        toastTimeout = setTimeout(() => {
             toast.classList.remove('show');
+            toastTimeout = null;
         }, 3000);
     }
 
@@ -813,68 +897,183 @@
         }
     }
 
-    function generateQRCode() {
+    let qrLogoDataUrl = null;
+
+    function handleLogoUpload(e) {
+        const file = e.target?.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showToast('Please upload an image file (PNG, JPG, etc.)', 'error');
+            return;
+        }
+
+        // 5MB limit for logo
+        if (file.size > 5 * 1024 * 1024) {
+            showToast('Logo must be under 5MB', 'error');
+            return;
+        }
+
+        showToast('Processing logo...', '');
+
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            try {
+                qrLogoDataUrl = ev.target.result;
+                updateQrLogoDisplay();
+                // Clear the "Processing" toast and show success
+                setTimeout(() => showToast('Logo uploaded successfully'), 200);
+            } catch (err) {
+                console.error('Logo Display Error:', err);
+                showToast('Failed to process logo image', 'error');
+            }
+        };
+        reader.onerror = () => {
+            showToast('Error reading image file', 'error');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function updateQrLogoDisplay() {
+        const logoPlaceholder = $('#qr-logo-display');
+        const logocutout = $('#qr-logo-cutout');
+        if (!logoPlaceholder || !logocutout) return;
+
+        if (qrLogoDataUrl) {
+            let imgHtml = '<img src="' + qrLogoDataUrl + '" alt="Client Logo" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+            logoPlaceholder.innerHTML = imgHtml;
+            logoPlaceholder.style.border = 'none';
+            logoPlaceholder.style.padding = '0';
+
+            logocutout.innerHTML = imgHtml;
+            logocutout.style.background = 'white';
+            logocutout.style.padding = '2px';
+        } else {
+            logoPlaceholder.innerHTML = '☕';
+            logoPlaceholder.style.border = '2px dashed #E8E0D8';
+            logocutout.innerHTML = '☕';
+        }
+    }
+
+    async function generateQRCode() {
         const urlInput = $('#qr-url');
         const sizeInput = $('#qr-size');
         const fgInput = $('#qr-fg');
         const bgInput = $('#qr-bg');
         const resultDiv = $('#qr-result');
         const qrImage = $('#qr-image');
+        const restaurantNameEl = $('#qr-restaurant-name');
 
-        if (!urlInput || !qrImage || !resultDiv) return;
-
-        let url = urlInput.value.trim();
-        if (!url) {
-            url = window.location.href.split('?')[0];
-            urlInput.value = url;
+        if (!urlInput || !qrImage || !resultDiv) {
+            showToast('Technical error: Missing QR elements', 'error');
+            return;
         }
+
+        const url = urlInput.value.trim() || 'https://first-coffee-restaurant-instant-men.vercel.app/';
 
         if (!Utils.isValidUrl(url)) {
-            showToast('Please enter a valid URL', 'error');
+            showToast('Please enter a valid URL (starting with https://)', 'error');
             return;
         }
 
-        const size = Math.max(200, Math.min(1200, parseInt(sizeInput?.value) || 600));
-        const fg = fgInput?.value || '#0a0a0a';
-        const bg = bgInput?.value || '#faf8f5';
+        const size = parseInt(sizeInput?.value) || 600;
+        const fg = fgInput?.value || '#1A1412';
+        const bg = bgInput?.value || '#FAF7F2';
 
-        if (typeof QRCode === 'undefined') {
-            showToast('QR library not loaded. Check your connection.', 'error');
+        const displayInput = $('#qr-restaurant-display');
+        const restaurantName = (displayInput?.value?.trim() || (data.restaurant || {}).name || 'First Coffee Restaurant');
+        if (restaurantNameEl) restaurantNameEl.textContent = restaurantName;
+
+        if (typeof window.QrCode === 'undefined') {
+            showToast('QR engine not initialized. Please refresh.', 'error');
             return;
         }
 
-        QRCode.toDataURL(url, {
-            width: size,
-            margin: 2,
-            color: { dark: fg, light: bg },
-            errorCorrectionLevel: 'M'
-        }, (err, dataUrl) => {
-            if (err) {
-                console.error(err);
-                showToast('QR generation failed', 'error');
-                return;
-            }
+        showToast('Generating QR code...', '');
+        const btn = $('#qr-generate-btn');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+        }
+
+        try {
+            // Step 1: Generate the QR matrix using the reliable danielgjackson library
+            const matrix = window.QrCode.generate(url, {
+                errorCorrectionLevel: 2 // Q level for better reliability with logos
+            });
+
+            // Step 2: Render to SVG Data URI
+            const dataUrl = window.QrCode.render('svg-uri', matrix, {
+                color: fg,
+                white: bg,
+                moduleRound: 0.1, // Slight rounding for premium look
+                finderRound: 0.2
+            });
+
             qrImage.src = dataUrl;
-            resultDiv.hidden = false;
-            showToast('QR code generated successfully');
-        });
-    }
+            resultDiv.removeAttribute('hidden');
+            resultDiv.style.setProperty('display', 'block', 'important');
 
-    function printQRPoster() {
-        const resultDiv = $('#qr-result');
-        if (!resultDiv || resultDiv.hidden) {
-            showToast('Generate a QR code first', 'error');
-            return;
+            // Allow time for the image to render before scrolling
+            setTimeout(() => {
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+
+            showToast('QR code generated successfully');
+        } catch (err) {
+            console.error('QR Generation Error:', err);
+            showToast('QR generation failed: ' + err.message, 'error');
+        } finally {
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = 'Generate QR Code';
+            }
         }
-        window.print();
     }
 
     function downloadQRCode() {
+        const resultDiv = $('#qr-result');
         const qrImage = $('#qr-image');
-        if (!qrImage || !qrImage.src) {
+        const poster = $('#qr-poster');
+
+        if (!resultDiv || resultDiv.hidden || !qrImage || !qrImage.src || !poster) {
             showToast('Generate a QR code first', 'error');
             return;
         }
+
+        showToast('Preparing high-quality download...', '');
+
+        if (typeof html2canvas !== 'undefined') {
+            const originalBg = poster.style.background;
+            poster.style.background = 'var(--color-ivory)';
+            html2canvas(poster, {
+                scale: 3,
+                useXHR: false,
+                logging: false,
+                backgroundColor: '#FAF7F2',
+                allowTaint: true,
+                foreignObjectRendering: false
+            }).then(canvas => {
+                poster.style.background = originalBg;
+                const a = document.createElement('a');
+                a.href = canvas.toDataURL('image/png', 1.0);
+                a.download = 'first-coffee-qr-poster.png';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                showToast('High-quality poster downloaded');
+            }).catch(err => {
+                poster.style.background = originalBg;
+                console.error('Download failed:', err);
+                showToast('High-quality download failed, trying standard download', 'error');
+                standardDownload(qrImage);
+            });
+        } else {
+            standardDownload(qrImage);
+        }
+    }
+
+    function standardDownload(qrImage) {
         const a = document.createElement('a');
         a.href = qrImage.src;
         a.download = 'first-coffee-qr.png';
@@ -882,6 +1081,19 @@
         a.click();
         document.body.removeChild(a);
         showToast('QR code downloaded');
+    }
+
+    function printQRPoster() {
+        const resultDiv = $('#qr-result');
+        if (!resultDiv || resultDiv.hidden || !$('#qr-image') || !$('#qr-image').src) {
+            showToast('Generate a QR code first', 'error');
+            return;
+        }
+
+        const actions = $('.qr-actions');
+        if (actions) actions.style.display = 'none';
+        window.print();
+        setTimeout(() => { if (actions) actions.style.display = ''; }, 500);
     }
 
     // Start

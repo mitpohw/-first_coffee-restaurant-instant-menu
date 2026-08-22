@@ -2,6 +2,10 @@ const Menu = {
     data: null,
     activeCategory: 'all',
     searchQuery: '',
+    activeFilters: {
+        dietary: 'all',
+        price: 'all'
+    },
 
     init(data) {
         this.data = data;
@@ -10,25 +14,56 @@ const Menu = {
 
     get filteredItems() {
         let items = this.data.items || [];
-        if (this.activeCategory !== 'all') {
-            items = items.filter(i => i.categoryId === this.activeCategory);
-        }
-        if (this.searchQuery.trim()) {
-            const q = this.searchQuery.toLowerCase().trim();
+
+        // If searching, search globally across all categories
+        const searchQ = this.searchQuery.trim();
+        if (searchQ) {
+            const q = searchQ.toLowerCase();
             items = items.filter(i =>
                 i.name.toLowerCase().includes(q) ||
                 (i.description && i.description.toLowerCase().includes(q)) ||
                 (i.tags && i.tags.some(t => t.toLowerCase().includes(q)))
             );
+        } else if (this.activeCategory !== 'all') {
+            items = items.filter(i => i.categoryId === this.activeCategory);
         }
+
+        if (this.activeFilters.dietary !== 'all') {
+            const diet = this.activeFilters.dietary;
+            items = items.filter(i => {
+                const dietary = i.dietary || [];
+                if (diet === 'vegan') return dietary.includes('vegan');
+                if (diet === 'vegetarian') return dietary.includes('vegetarian') || dietary.includes('vegan') || dietary.includes('vegan-option');
+                if (diet === 'gluten-free') return dietary.includes('gluten-free');
+                if (diet === 'dairy-free') return dietary.includes('dairy-free');
+                return true;
+            });
+        }
+
+        if (this.activeFilters.price !== 'all') {
+            const [min, max] = this.activeFilters.price.split('-').map(v => v === '+' ? Infinity : parseInt(v));
+            items = items.filter(i => i.price >= min && i.price <= max);
+        }
+
         return items.sort((a, b) => (a.order || 0) - (b.order || 0));
     },
 
     get featuredItems() {
-        if (this.searchQuery.trim() || this.activeCategory !== 'all') return [];
-        return (this.data.items || [])
-            .filter(i => i.featured && i.available)
-            .sort((a, b) => (a.order || 0) - (b.order || 0));
+        const searchQ = this.searchQuery.trim().toLowerCase();
+        let items = (this.data.items || []).filter(i => i.featured && i.available);
+
+        if (searchQ) {
+            items = items.filter(i =>
+                i.name.toLowerCase().includes(searchQ) ||
+                (i.description && i.description.toLowerCase().includes(searchQ))
+            );
+        }
+
+        if (this.activeCategory !== 'all' || this.activeFilters.dietary !== 'all' || this.activeFilters.price !== 'all') {
+             if (!searchQ) return [];
+        }
+
+        return items.sort((a, b) => (a.order || 0) - (b.order || 0));
     },
 
     render() {
@@ -37,20 +72,106 @@ const Menu = {
         this.renderItems();
         this.renderFooter();
         this.initScrollEffects();
+        this.initLazyLoad();
+        this.initFilterEvents();
+    },
+
+    initFilterEvents() {
+        const filterChips = document.querySelectorAll('.filter-chip');
+        filterChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                const filterType = chip.dataset.filter;
+                const filterValue = chip.dataset.value;
+                if (!filterType) return;
+
+                if (filterType === 'dietary') {
+                    this.activeFilters.dietary = filterValue;
+                } else if (filterType === 'price') {
+                    this.activeFilters.price = filterValue;
+                }
+
+                document.querySelectorAll('.filter-chip[data-filter="' + filterType + '"]').forEach(c => {
+                    c.classList.toggle('active', c.dataset.value === filterValue);
+                });
+
+                this.renderItems();
+                this.renderFeatured();
+                this.updateFilterVisibility();
+                this.scrollToTop();
+            });
+        });
+
+        const clearBtn = document.getElementById('clear-filters');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', () => {
+                this.activeFilters.dietary = 'all';
+                this.activeFilters.price = 'all';
+                document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.value === 'all'));
+                this.renderItems();
+                this.renderFeatured();
+                this.updateFilterVisibility();
+            });
+        }
+    },
+
+    updateFilterVisibility() {
+        const filterBar = document.getElementById('filter-bar');
+        const hasActive = this.activeFilters.dietary !== 'all' || this.activeFilters.price !== 'all';
+        if (filterBar) {
+            filterBar.hidden = !hasActive;
+        }
+    },
+
+    initLazyLoad() {
+        if (!this._lazyObserver) {
+            this._lazyObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        const src = img.getAttribute('data-src');
+                        if (src) {
+                            img.src = src;
+                            img.classList.add('lazy-loaded');
+                        }
+                        this._lazyObserver.unobserve(img);
+                    }
+                });
+            }, { rootMargin: '50px 0px', threshold: 0.01 });
+        }
+
+        document.querySelectorAll('img[data-src]:not(.lazy-loaded)').forEach(img => {
+            this._lazyObserver.observe(img);
+        });
     },
 
     initScrollEffects() {
+        const header = document.querySelector('.site-header');
+        const catNav = document.querySelector('.category-nav');
+        if (!header && !catNav) return;
+
         const handleScroll = () => {
-            const scrolled = window.scrollY > 10;
-            const header = document.querySelector('.site-header');
-            const catNav = document.querySelector('.category-nav');
-            if (header) header.classList.toggle('scrolled', scrolled);
-            if (catNav) catNav.classList.toggle('scrolled', scrolled);
+            const scrolled = window.scrollY > 12;
+            const scrollProgress = Math.min(window.scrollY / 120, 1);
+
+            if (header) {
+                header.classList.toggle('scrolled', scrolled);
+                const shadowOpacity = scrollProgress * 0.08;
+                header.style.boxShadow = scrolled
+                    ? `0 4px 24px rgba(26, 20, 18, ${shadowOpacity})`
+                    : 'none';
+            }
+            if (catNav) {
+                catNav.classList.toggle('scrolled', scrolled);
+                const navOpacity = 0.85 + scrollProgress * 0.1;
+                catNav.style.boxShadow = scrolled
+                    ? `0 2px 16px rgba(26, 20, 18, ${scrollProgress * 0.06})`
+                    : 'none';
+            }
         };
 
         window.removeEventListener('scroll', this._scrollHandler);
-        this._scrollHandler = handleScroll;
-        window.addEventListener('scroll', handleScroll, { passive: true });
+        this._scrollHandler = Utils.debounce(handleScroll, 8);
+        window.addEventListener('scroll', this._scrollHandler, { passive: true });
         handleScroll();
     },
 
@@ -74,20 +195,24 @@ const Menu = {
 
     setCategory(catId) {
         this.activeCategory = catId;
+        this.activeFilters.dietary = 'all';
+        this.activeFilters.price = 'all';
         document.querySelectorAll('.cat-btn').forEach(b => b.classList.toggle('active', b.dataset.cat === catId));
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.value === 'all'));
         const activeBtn = document.querySelector('.cat-btn[data-cat="' + catId + '"]');
         if (activeBtn) {
             activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
         this.renderItems();
         this.renderFeatured();
+        this.updateFilterVisibility();
         if (catId !== 'all') {
             const section = document.getElementById(catId);
             if (section) {
                 section.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         } else {
-            const target = document.getElementById('menu-content');
+            const target = document.getElementById('menu-main');
             if (target) {
                 target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
@@ -175,13 +300,18 @@ const Menu = {
         const unavailable = !item.available;
         const imgSrc = item.image || '';
         const imgHtml = imgSrc
-            ? '<img class="modal-image" src="' + Utils.escapeHtml(imgSrc) + '" alt="' + Utils.escapeHtml(item.name) + '" loading="lazy" onerror="this.parentElement.querySelector(\'.modal-image\').style.display=\'none\'">'
-            : '';
+            ? '<div style="position:relative;"><img class="modal-image" src="' + Utils.escapeHtml(imgSrc) + '" alt="' + Utils.escapeHtml(item.name) + '" loading="lazy" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
+              '<div class="modal-image placeholder" style="display:none;align-items:center;justify-content:center;font-size:4rem;background:var(--color-border-light);height:300px;border-radius:var(--radius-md);margin-bottom:1.5rem;">☕</div></div>'
+            : '<div class="modal-image placeholder" style="display:flex;align-items:center;justify-content:center;font-size:4rem;background:var(--color-border-light);height:300px;border-radius:var(--radius-md);margin-bottom:1.5rem;">☕</div>';
 
         let tagsHtml = '';
         if (item.popular) tagsHtml += '<span class="tag tag-popular">Popular</span>';
         if (item.featured) tagsHtml += '<span class="tag tag-featured">Featured</span>';
         if (unavailable) tagsHtml += '<span class="tag tag-unavailable">Unavailable</span>';
+        if (item.dietary && item.dietary.includes('vegan')) tagsHtml += '<span class="tag tag-dietary">Vegan</span>';
+        if (item.dietary && item.dietary.includes('vegetarian') && !item.dietary.includes('vegan')) tagsHtml += '<span class="tag tag-dietary">Vegetarian</span>';
+        if (item.dietary && item.dietary.includes('gluten-free')) tagsHtml += '<span class="tag tag-dietary">Gluten-Free</span>';
+        if (item.dietary && item.dietary.includes('dairy-free')) tagsHtml += '<span class="tag tag-dietary">Dairy-Free</span>';
 
         let optionsHtml = '';
         if (item.options && item.options.length > 0) {
@@ -191,7 +321,7 @@ const Menu = {
         }
 
         body.innerHTML =
-            (imgHtml || '<div style="height:200px;background:#f0ebe4;border-radius:var(--radius-md);margin-bottom:1.25rem;display:flex;align-items:center;justify-content:center;font-size:3rem;">☕</div>') +
+            (imgHtml || '<div style="height:200px;background:var(--color-border-light);border-radius:var(--radius-md);margin-bottom:1.5rem;display:flex;align-items:center;justify-content:center;font-size:3rem;">☕</div>') +
             '<h2 class="modal-title" id="modal-title">' + Utils.escapeHtml(item.name) + '</h2>' +
             '<p class="modal-price">' + Utils.formatPrice(item.price, this.data.restaurant.currency) + '</p>' +
             (item.description ? '<p class="modal-desc">' + Utils.escapeHtml(item.description) + '</p>' : '') +
@@ -214,6 +344,37 @@ const Menu = {
 
         newCloseBtn?.addEventListener('click', close);
         newOverlay?.addEventListener('click', close);
+
+        this.attachZoom();
+    },
+
+    attachZoom() {
+        const modal = document.getElementById('item-modal');
+        const zoomOverlay = document.getElementById('image-zoom');
+        const zoomImg = document.getElementById('zoom-img');
+        const modalImg = modal?.querySelector('.modal-image');
+
+        if (!modalImg || !zoomOverlay || !zoomImg) return;
+        if (!modalImg.src || modalImg.style.display === 'none') return;
+
+        const openZoom = () => {
+            zoomImg.src = modalImg.src;
+            zoomImg.alt = modalImg.alt || '';
+            zoomOverlay.classList.add('visible');
+            zoomOverlay.style.opacity = '1';
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeZoom = () => {
+            zoomOverlay.classList.remove('visible');
+            document.body.style.overflow = '';
+        };
+
+        modalImg.style.cursor = 'zoom-in';
+        modalImg.onclick = openZoom;
+
+        zoomOverlay.onclick = closeZoom;
+        zoomImg.onclick = (e) => e.stopPropagation();
     },
 
     closeDetailModal() {
@@ -227,14 +388,19 @@ const Menu = {
     cardHtml(item, isFeatured) {
         const unavailable = !item.available;
         const imgSrc = item.image || '';
+        const placeholder = '<div class="menu-item-image placeholder">☕</div>';
+
         const imgHtml = imgSrc
-            ? '<img class="menu-item-image" src="' + Utils.escapeHtml(imgSrc) + '" alt="' + Utils.escapeHtml(item.name) + '" loading="lazy" onerror="this.style.display=\'none\'">'
-            : '<div class="menu-item-image" style="display:flex;align-items:center;justify-content:center;font-size:2rem;background:#f0ebe4;">☕</div>';
+            ? '<img class="menu-item-image lazyload" data-src="' + Utils.escapeHtml(imgSrc) + '" alt="' + Utils.escapeHtml(item.name) + '" loading="lazy" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
+              '<div class="menu-item-image placeholder" style="display:none;">☕</div>'
+            : placeholder;
 
         let tagsHtml = '';
         if (item.popular) tagsHtml += '<span class="tag tag-popular">Popular</span>';
         if (item.featured && isFeatured) tagsHtml += '<span class="tag tag-featured">Featured</span>';
         if (unavailable) tagsHtml += '<span class="tag tag-unavailable">Unavailable</span>';
+        if (item.dietary && item.dietary.includes('vegan')) tagsHtml += '<span class="tag tag-dietary">Vegan</span>';
+        if (item.dietary && item.dietary.includes('vegetarian') && !item.dietary.includes('vegan')) tagsHtml += '<span class="tag tag-dietary">Vegetarian</span>';
 
         const desc = item.description ? Utils.escapeHtml(item.description) : '';
 
@@ -253,6 +419,7 @@ const Menu = {
     featuredCardHtml(item, index) {
         const unavailable = !item.available;
         const imgSrc = item.image || '';
+        const placeholder = '<div class="featured-card-image-wrap placeholder">☕</div>';
 
         let tagsHtml = '';
         if (item.popular) tagsHtml += '<span class="featured-card-tag popular">Popular</span>';
@@ -260,8 +427,9 @@ const Menu = {
         if (unavailable) tagsHtml += '<span class="featured-card-tag unavailable">Unavailable</span>';
 
         const imgHtml = imgSrc
-            ? '<div class="featured-card-image-wrap"><img class="featured-card-image" src="' + Utils.escapeHtml(imgSrc) + '" alt="' + Utils.escapeHtml(item.name) + '" loading="lazy" onerror="this.style.display=\'none\'"></div>'
-            : '<div class="featured-card-image-wrap" style="display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:#f0ebe4;">☕</div>';
+            ? '<div class="featured-card-image-wrap"><img class="featured-card-image lazyload" data-src="' + Utils.escapeHtml(imgSrc) + '" alt="' + Utils.escapeHtml(item.name) + '" loading="lazy" onerror="this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';">' +
+              '<div class="featured-card-image-wrap placeholder" style="display:none;height:100%;width:100%;">☕</div></div>'
+            : placeholder;
 
         return '<article class="featured-card' + (unavailable ? ' unavailable' : '') + '" data-id="' + Utils.escapeHtml(item.id) + '" tabindex="0" role="button" aria-label="' + Utils.escapeHtml(item.name) + ', ' + Utils.formatPrice(item.price, this.data.restaurant.currency) + (unavailable ? ', unavailable' : '') + '">' +
             imgHtml +
@@ -301,5 +469,12 @@ const Menu = {
 
     refresh() {
         this.render();
+    },
+
+    scrollToTop() {
+        const target = document.getElementById('menu-main');
+        if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 };

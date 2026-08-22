@@ -8,15 +8,43 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='serif'>☕</text></svg>">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/admin.css">
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Immediate Auth Check before rendering the body
+        if (!Auth.isAuthenticated()) {
+            window.location.replace('admin-login.html');
+        }
+    </script>
+    <script>
+        if (window.tailwind) {
+            window.tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'charcoal': '#1A1412',
+                            'champagne': '#D4A373',
+                            'champagne-light': '#E6C99D',
+                            'ivory': '#FAF7F2',
+                            'ivory-dark': '#2C1810'
+                        },
+                        fontFamily: {
+                            'serif-display': ['Playfair Display', 'Georgia', 'serif'],
+                            'sans-body': ['Inter', 'system-ui', 'sans-serif']
+                        }
+                    }
+                }
+            };
+        }
+    </script>
 </head>
 <body>
     <div id="admin-app" style="display:none;">
-        <!-- Auth Check handled by admin-panel.js -->
-
-        <!-- Admin Header -->
         <header class="admin-header">
             <div class="admin-header-inner">
                 <div class="admin-brand">
@@ -25,14 +53,14 @@
                 </div>
                 <div class="admin-header-actions">
                     <button id="admin-preview" class="btn btn-secondary btn-sm">Preview Menu</button>
-                    <button id="admin-exit" class="icon-btn" aria-label="Exit admin" title="Exit to Menu">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    <button id="admin-logout" class="btn btn-primary btn-sm" title="Sign Out">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.25rem;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                        Logout
                     </button>
                 </div>
             </div>
         </header>
 
-        <!-- Admin Tabs -->
         <nav class="admin-tabs" aria-label="Admin sections">
             <div class="admin-tabs-inner">
                 <button class="admin-tab active" data-tab="sections">Menu Sections</button>
@@ -44,24 +72,16 @@
             </div>
         </nav>
 
-        <!-- Admin Main -->
         <main class="admin-main">
             <div class="admin-container">
-                
                 <!-- Sections Tab -->
                 <section id="tab-sections" class="admin-tab-content active">
                     <div class="admin-card">
                         <div class="admin-card-header">
                             <h2>Menu Sections</h2>
-                            <div class="admin-add-select">
-                                <select id="add-section-type">
-                                    <option value="section">New Section</option>
-                                    <option value="subsection">New Sub-Section</option>
-                                </select>
-                                <button id="add-section-btn" class="btn btn-primary btn-sm">+ Add</button>
-                            </div>
+                            <button id="add-section-btn" class="btn btn-primary btn-sm">+ Add Section</button>
                         </div>
-                        <p class="admin-hint">Create top-level categories (e.g., Breakfast, Lunch, Dinner) or sub-categories (e.g., Soups, Salads, Extras).</p>
+                        <p class="admin-hint">Create top-level categories or sub-categories for your menu.</p>
                         <ul id="section-list" class="admin-list"></ul>
                     </div>
                 </section>
@@ -88,19 +108,19 @@
                         <h2>Restaurant Settings</h2>
                         <form id="restaurant-form" class="form">
                             <div class="form-row">
-                                <div class="form-group"><label for="r-name">Restaurant Name</label><input id="r-name" type="text" placeholder="e.g., First Coffee Restaurant"></div>
-                                <div class="form-group"><label for="r-tagline">Tagline</label><input id="r-tagline" type="text" placeholder="e.g., Authentic Ethiopian Cuisine"></div>
+                                <div class="form-group"><label for="r-name">Restaurant Name</label><input id="r-name" type="text"></div>
+                                <div class="form-group"><label for="r-tagline">Tagline</label><input id="r-tagline" type="text"></div>
                             </div>
-                            <div class="form-group"><label for="r-address">Address</label><input id="r-address" type="text" placeholder="Street, City, Country"></div>
+                            <div class="form-group"><label for="r-address">Address</label><input id="r-address" type="text"></div>
                             <div class="form-row">
-                                <div class="form-group"><label for="r-phone">Phone</label><input id="r-phone" type="tel" placeholder="+251 911 234 567"></div>
-                                <div class="form-group"><label for="r-hours">Opening Hours</label><input id="r-hours" type="text" placeholder="Mon-Sun: 7:00 AM - 10:00 PM"></div>
+                                <div class="form-group"><label for="r-phone">Phone</label><input id="r-phone" type="tel"></div>
+                                <div class="form-group"><label for="r-hours">Opening Hours</label><input id="r-hours" type="text"></div>
                             </div>
                             <div class="form-row">
-                                <div class="form-group"><label for="r-currency">Currency</label><input id="r-currency" type="text" maxlength="5" placeholder="ETB"></div>
-                                <div class="form-group"><label for="r-social">Social URL (optional)</label><input id="r-social" type="url" placeholder="https://instagram.com/..."></div>
+                                <div class="form-group"><label for="r-currency">Currency</label><input id="r-currency" type="text" maxlength="5"></div>
+                                <div class="form-group"><label for="r-social">Social URL</label><input id="r-social" type="url"></div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Save Restaurant Settings</button>
+                            <button type="submit" class="btn btn-primary">Save Settings</button>
                         </form>
                     </div>
                 </section>
@@ -108,88 +128,69 @@
                 <!-- QR Code Tab -->
                 <section id="tab-qr" class="admin-tab-content">
                     <div class="admin-card">
-                        <div class="admin-card-header">
-                            <h2>QR Code Generator</h2>
-                        </div>
-                        <p class="admin-hint">Generate a printable QR code that links directly to your live menu. Customize size and colors to match your brand.</p>
-                        
+                        <h2>QR Code Generator</h2>
                         <div class="qr-generator-form">
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="qr-url">Menu URL</label>
-                                    <input id="qr-url" type="url" placeholder="https://your-menu-url.com">
+                                    <input id="qr-url" type="url" placeholder="https://...">
                                 </div>
                                 <div class="form-group">
                                     <label for="qr-size">QR Size (px)</label>
-                                    <input id="qr-size" type="number" value="600" min="200" max="1200" step="50">
+                                    <input id="qr-size" type="number" value="600">
                                 </div>
                             </div>
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="qr-fg">Foreground Color</label>
-                                    <input id="qr-fg" type="color" value="#0a0a0a">
+                                    <input id="qr-fg" type="color" value="#1A1412">
                                 </div>
                                 <div class="form-group">
                                     <label for="qr-bg">Background Color</label>
-                                    <input id="qr-bg" type="color" value="#faf8f5">
+                                    <input id="qr-bg" type="color" value="#FAF7F2">
                                 </div>
                             </div>
-                            <button id="qr-generate-btn" class="btn btn-primary" style="margin-top: 0.5rem;">
-                                Generate QR Code
-                            </button>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="qr-logo">Logo Upload</label>
+                                    <input id="qr-logo" type="file" accept="image/*">
+                                </div>
+                                <div class="form-group">
+                                    <label for="qr-restaurant-display">Display Name</label>
+                                    <input id="qr-restaurant-display" type="text">
+                                </div>
+                            </div>
+                            <button id="qr-generate-btn" class="btn btn-primary">Generate QR Code</button>
                         </div>
 
                         <div id="qr-result" class="qr-result" hidden>
-                            <div class="qr-preview-container">
-                                <div class="qr-poster-preview">
-                                    <div class="qr-poster-grid">
-                                        <!-- Left Column: Text Content -->
-                                        <div class="qr-poster-left">
-                                            <div class="qr-logo-placeholder">
-                                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                                            </div>
-                                            <h3 class="qr-restaurant-name">First Coffee Restaurant</h3>
-                                            
-                                            <div class="qr-badge">
-                                                <span class="qr-badge-text">SCAN & ORDER</span>
-                                            </div>
-
-                                            <div class="qr-instructions">
-                                                <p class="qr-instructions-title">Elevate your experience:</p>
-                                                <ol class="qr-instructions-list">
-                                                    <li>Scan with your phone</li>
-                                                    <li>Open the menu</li>
-                                                    <li>Select your favorites</li>
-                                                </ol>
-                                            </div>
-                                        </div>
-
-                                        <!-- Right Column: QR Code -->
-                                        <div class="qr-poster-right">
-                                            <div class="qr-code-wrapper">
-                                                <img id="qr-image" alt="QR Code" class="qr-code-img">
-                                                <div class="qr-logo-cutout">
-                                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
-                                                </div>
-                                            </div>
+                            <div id="qr-poster" class="qr-poster-preview">
+                                <div class="qr-poster-grid">
+                                    <div class="qr-poster-left">
+                                        <div id="qr-logo-display" class="qr-logo-placeholder">☕</div>
+                                        <h3 id="qr-restaurant-name" class="qr-restaurant-name"></h3>
+                                        <div class="qr-badge"><span class="qr-badge-text">SCAN & ORDER</span></div>
+                                        <div class="qr-instructions">
+                                            <p class="qr-instructions-title">Elevate your experience:</p>
+                                            <ol class="qr-instructions-list">
+                                                <li>Scan with phone</li>
+                                                <li>Open menu</li>
+                                                <li>Order favorites</li>
+                                            </ol>
                                         </div>
                                     </div>
-
-                                    <div class="qr-poster-footer">
-                                        <p>Powered by: Neon solutions-michael luel</p>
+                                    <div class="qr-poster-right">
+                                        <div class="qr-code-wrapper">
+                                            <img id="qr-image" alt="QR Code" class="qr-code-img">
+                                            <div id="qr-logo-cutout" class="qr-logo-cutout">☕</div>
+                                        </div>
                                     </div>
                                 </div>
+                                <div class="qr-poster-footer">Powered by: Neon solutions-michael luel</div>
                             </div>
-
                             <div class="qr-actions">
-                                <button id="qr-print-btn" class="btn btn-primary">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                                    Print Poster
-                                </button>
-                                <button id="qr-download-btn" class="btn btn-secondary">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                                    Download PNG
-                                </button>
+                                <button id="qr-print-btn" class="btn btn-primary">Print Poster</button>
+                                <button id="qr-download-btn" class="btn btn-secondary">Download PNG</button>
                             </div>
                         </div>
                     </div>
@@ -199,14 +200,10 @@
                 <section id="tab-data" class="admin-tab-content">
                     <div class="admin-card">
                         <h2>Data Management</h2>
-                        <p class="admin-hint">Export your menu configuration for backup, or import a previously saved file.</p>
                         <div class="admin-actions-row">
                             <button id="export-data" class="btn btn-secondary">Export JSON</button>
-                            <label class="btn btn-secondary file-label">
-                                Import JSON
-                                <input type="file" id="import-data" accept="application/json" hidden>
-                            </label>
-                            <button id="reset-data" class="btn btn-danger">Reset Demo Data</button>
+                            <label class="btn btn-secondary file-label">Import JSON<input type="file" id="import-data" hidden></label>
+                            <button id="reset-data" class="btn btn-danger">Reset Defaults</button>
                         </div>
                     </div>
                 </section>
@@ -215,28 +212,17 @@
                 <section id="tab-admins" class="admin-tab-content">
                     <div class="admin-card">
                         <div class="admin-card-header">
-                            <h2>Admin Management</h2>
+                            <h2>Admins</h2>
                             <button id="add-admin-btn" class="btn btn-primary btn-sm">+ Add Admin</button>
                         </div>
-                        <p class="admin-hint">Manage administrator accounts, roles, and permissions. Only Super Admins can manage other admins.</p>
                         <ul id="admin-list" class="admin-list"></ul>
                     </div>
-
                     <div class="admin-card">
                         <h2>Change Password</h2>
                         <form id="change-password-form" class="form">
-                            <div class="form-group">
-                                <label for="current-password">Current Password</label>
-                                <input id="current-password" type="password" required placeholder="Enter current password">
-                            </div>
-                            <div class="form-group">
-                                <label for="new-password">New Password</label>
-                                <input id="new-password" type="password" required placeholder="Enter new password" minlength="6">
-                            </div>
-                            <div class="form-group">
-                                <label for="confirm-password">Confirm New Password</label>
-                                <input id="confirm-password" type="password" required placeholder="Confirm new password" minlength="6">
-                            </div>
+                            <input id="current-password" type="password" placeholder="Current Password" required>
+                            <input id="new-password" type="password" placeholder="New Password" required>
+                            <input id="confirm-password" type="password" placeholder="Confirm Password" required>
                             <button type="submit" class="btn btn-primary">Update Password</button>
                         </form>
                     </div>
@@ -245,113 +231,65 @@
         </main>
     </div>
 
-    <!-- Admin Modal (for add/edit admin) -->
-    <div id="admin-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+    <!-- Modals -->
+    <div id="admin-modal" class="modal" hidden>
         <div class="modal-overlay"></div>
         <div class="modal-content">
-            <button class="modal-close" aria-label="Close">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <div class="modal-body">
-                <h2 id="admin-modal-title" class="modal-title">Add Admin</h2>
-                <form id="admin-form" class="form">
-                    <div class="form-group">
-                        <label for="admin-username">Username</label>
-                        <input id="admin-username" type="text" required placeholder="Enter username">
-                    </div>
-                    <div class="form-group">
-                        <label for="admin-password">Password</label>
-                        <input id="admin-password" type="password" required placeholder="Enter password" minlength="6">
-                    </div>
-                    <div class="form-group">
-                        <label for="admin-role">Role</label>
-                        <select id="admin-role">
-                            <option value="editor">Editor</option>
-                            <option value="admin">Admin</option>
-                            <option value="super_admin">Super Admin</option>
-                        </select>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save Admin</button>
-                        <button type="button" class="btn btn-secondary" id="admin-cancel">Cancel</button>
-                    </div>
-                </form>
-            </div>
+            <h2 id="admin-modal-title"></h2>
+            <form id="admin-form" class="form">
+                <input id="admin-username" type="text" placeholder="Username" required>
+                <input id="admin-password" type="password" placeholder="Password">
+                <select id="admin-role">
+                    <option value="editor">Editor</option>
+                    <option value="admin">Admin</option>
+                    <option value="super_admin">Super Admin</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" id="admin-cancel">Cancel</button>
+            </form>
         </div>
     </div>
 
-    <!-- Section Modal -->
-    <div id="section-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="section-modal-title">
+    <div id="section-modal" class="modal" hidden>
         <div class="modal-overlay"></div>
         <div class="modal-content">
-            <button class="modal-close" aria-label="Close">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <div class="modal-body">
-                <h2 id="section-modal-title" class="modal-title">Add Section</h2>
-                <form id="section-form" class="form">
-                    <div class="form-group">
-                        <label for="s-name">Section Name</label>
-                        <input id="s-name" type="text" required placeholder="e.g., Breakfast, Lunch, Dinner">
-                    </div>
-                    <div class="form-group">
-                        <label for="s-parent">Parent Section (optional)</label>
-                        <select id="s-parent">
-                            <option value="">None (Top-level)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="s-order">Display Order</label>
-                        <input id="s-order" type="number" value="1" min="1">
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save Section</button>
-                        <button type="button" class="btn btn-secondary" id="section-cancel">Cancel</button>
-                    </div>
-                </form>
-            </div>
+            <h2 id="section-modal-title"></h2>
+            <form id="section-form" class="form">
+                <input id="s-name" type="text" placeholder="Section Name" required>
+                <select id="s-parent"><option value="">None</option></select>
+                <input id="s-order" type="number" value="1">
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" id="section-cancel">Cancel</button>
+            </form>
         </div>
     </div>
 
-    <!-- Item Modal -->
-    <div id="item-modal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="item-modal-title">
+    <div id="item-modal" class="modal" hidden>
         <div class="modal-overlay"></div>
         <div class="modal-content">
-            <button class="modal-close" aria-label="Close">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-            </button>
-            <div class="modal-body">
-                <h2 id="item-modal-title" class="modal-title">Add Menu Item</h2>
-                <form id="item-form" class="form">
-                    <div class="form-group">
-                        <label for="i-name">Item Name</label>
-                        <input id="i-name" type="text" required placeholder="e.g., Doro Wat">
-                    </div>
-                    <div class="form-group">
-                        <label for="i-price">Price</label>
-                        <input id="i-price" type="number" step="0.01" min="0" required placeholder="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label for="i-section">Section</label>
-                        <select id="i-section" required></select>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">Save Item</button>
-                        <button type="button" class="btn btn-secondary" id="item-cancel">Cancel</button>
-                    </div>
-                </form>
-            </div>
+            <h2 id="item-modal-title"></h2>
+            <form id="item-form" class="form">
+                <input id="i-name" type="text" placeholder="Item Name" required>
+                <input id="i-price" type="number" step="0.01" required>
+                <select id="i-section" required></select>
+                <div class="form-row">
+                    <label><input id="i-available" type="checkbox" checked> Available</label>
+                    <label><input id="i-featured" type="checkbox"> Featured</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <button type="button" class="btn btn-secondary" id="item-cancel">Cancel</button>
+            </form>
         </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
+    <div id="toast" class="toast" hidden></div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="js/qr-lib.js"></script>
     <script src="js/data.js"></script>
-    <script src="js/auth.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/storage.js"></script>
     <script src="js/admin-panel.js"></script>
+    <script src="js/animations.js"></script>
 </body>
 </html>

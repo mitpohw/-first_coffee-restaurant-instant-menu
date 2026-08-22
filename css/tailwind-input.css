@@ -1,0 +1,117 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Luxury Minimalist Theme - Design Tokens */
+:root {
+  --color-charcoal: #1A1412;
+  --color-charcoal-light: #2C211D;
+  --color-champagne: #D4A373;
+  --color-champagne-light: #E6C99D;
+  --color-ivory: #FAF7F2;
+  --color-ivory-dark: #2C1810;
+  --color-bg: #121210;
+  --color-surface: #FAF7F2;
+  --color-surface-light: #FFFFF8;
+  --color-text: #2C1810;
+  --color-text-light: #6B5B4F;
+  --color-text-muted: #7A6A5E;
+  --color-border: #E8E0D8;
+  --color-border-light: #F0E8DE;
+  --shadow-sm: 0 1px 3px rgba(26, 20, 18, 0.06);
+  --shadow-md: 0 4px 12px rgba(26, 20, 18, 0.08);
+  --shadow-lg: 0 10px 30px rgba(26, 20, 18, 0.12);
+  --shadow-xl: 0 20px 40px rgba(26, 20, 18, 0.15);
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  --max-width: 720px;
+  --header-height: 68px;
+  --cat-nav-height: 56px;
+  --transition: 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-theme="dark"] {
+  --color-bg: #0A0A08;
+  --color-surface: #1A1412;
+  --color-text: #F0E6DC;
+  --color-text-light: #C4B5A8;
+  --color-text-muted: #B0A095;
+  --color-border: #3A2E28;
+  --color-border-light: #4A3E36;
+  --color-primary: #D4A373;
+  --color-champagne: #D4A373;
+  --color-champagne-light: #E6C99D;
+  --color-charcoal: #0A0A08;
+  --color-ivory: #1A1412;
+}
+
+@layer base {
+  body {
+    @apply font-sans-body antialiased;
+    background-color: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif-display;
+  }
+
+  .container {
+    width: 100%;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+
+  @media (min-width: 768px) {
+    .container {
+      padding: 0 1.5rem;
+    }
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-champagne text-charcoal font-semibold rounded-lg transition-all duration-300;
+  }
+
+  .btn-primary:hover {
+    @apply bg-champagne-light;
+  }
+
+  .cat-btn.active {
+    @apply bg-charcoal text-ivory border-charcoal;
+  }
+
+  .luxury-card {
+    @apply bg-ivory border border-border-light rounded-xl shadow-luxury-sm transition-all duration-300;
+  }
+
+  .luxury-card:hover {
+    @apply shadow-luxury-xl border-champagne/30;
+  }
+
+  .text-champagne {
+    color: var(--color-champagne);
+  }
+
+  .text-charcoal {
+    color: var(--color-charcoal);
+  }
+
+  .bg-charcoal {
+    background-color: var(--color-charcoal);
+  }
+
+  .bg-champagne {
+    background-color: var(--color-champagne);
+  }
+}
+
+/* Utility classes for luxury theme */
+.shadow-luxury-sm { box-shadow: var(--shadow-sm); }
+.shadow-luxury-md { box-shadow: var(--shadow-md); }
+.shadow-luxury-lg { box-shadow: var(--shadow-lg); }
+.shadow-luxury-xl { box-shadow: var(--shadow-xl); }

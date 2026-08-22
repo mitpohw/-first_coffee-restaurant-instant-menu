@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+*.jsdelivr
+*.local
+
+# Build output
+dist/
+.build/
+.vercel/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+.env.development
+.env.production
+
+# Generated
+css/tailwind-output.css

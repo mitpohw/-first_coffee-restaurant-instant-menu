@@ -198,6 +198,12 @@
     box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.15);
 }
 
+.form-group input[type="color"] {
+    padding: 0.2rem;
+    height: 42px;
+    cursor: pointer;
+}
+
 .form-actions {
     display: flex;
     gap: 0.75rem;
@@ -272,7 +278,7 @@
 
 .admin-btn-icon:hover {
     background: #E8E0D8;
-    color: #4A2C2A;
+    color: #1A1412;
 }
 
 .admin-btn-icon:focus-visible {
@@ -283,6 +289,36 @@
 .admin-btn-icon.delete:hover {
     background: #FADBD8;
     color: #C0392B;
+}
+
+.admin-btn-icon.active {
+    color: #D4A373;
+    background: rgba(212, 163, 115, 0.08);
+}
+
+.admin-btn-icon.inactive {
+    color: #547288;
+    background: rgba(84, 114, 136, 0.08);
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.15rem 0.4rem;
+    border-radius: 9999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-left: 0.4rem;
+}
+
+.status-badge.featured {
+    color: #D4A373;
+}
+
+.status-badge.unavailable {
+    color: #547288;
+    background: rgba(84, 114, 136, 0.12);
 }
 
 /* Buttons */
@@ -447,7 +483,7 @@
 }
 
 .qr-result {
-    border-top: 1px solid #E8E0D8;
+    border-top: 1px solid var(--color-border-light, #E8E0D8);
     padding-top: 1.5rem;
 }
 
@@ -459,13 +495,13 @@
 
 .qr-poster-preview {
     background: #fff;
-    border: 1px solid #E8E0D8;
+    border: 1px solid var(--color-border-light, #E8E0D8);
     border-radius: 24px;
     padding: 2.5rem;
     text-align: center;
     max-width: 800px;
     width: 100%;
-    box-shadow: 0 4px 20px rgba(44, 24, 16, 0.08);
+    box-shadow: 0 4px 20px rgba(26, 20, 18, 0.08);
 }
 
 .qr-poster-grid {
@@ -509,11 +545,11 @@
     color: #D4A373;
 }
 
-.qr-restaurant-name {
+    .qr-restaurant-name {
     font-family: 'Playfair Display', Georgia, serif;
     font-size: 1.5rem;
     font-weight: 600;
-    color: #4A2C2A;
+    color: #1A1412;
     margin: 0;
 }
 
@@ -531,20 +567,20 @@
     border-radius: 12px;
 }
 
-.qr-logo-cutout {
+    .qr-logo-cutout {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     width: 64px;
     height: 64px;
-    background: #fff;
-    border: 3px solid #fff;
+    background: #FAF7F2;
+    border: 3px solid #FAF7F2;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #4A2C2A;
+    color: #1A1412;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
@@ -554,11 +590,11 @@
     justify-content: center;
     width: 120px;
     height: 120px;
-    background: #4A2C2A;
+    background: #1A1412;
     color: #fff;
     border-radius: 50%;
     margin-bottom: 1.25rem;
-    box-shadow: 0 4px 12px rgba(74, 44, 42, 0.25);
+    box-shadow: 0 4px 12px rgba(26, 20, 18, 0.25);
 }
 
 .qr-badge-text {
@@ -581,7 +617,7 @@
     font-weight: 600;
     font-size: 0.9rem;
     margin-bottom: 0.5rem;
-    color: #4A2C2A;
+    color: #1A1412;
 }
 
 .qr-instructions-list {
@@ -590,6 +626,17 @@
     margin: 0;
     font-size: 0.85rem;
     line-height: 1.8;
+}
+
+.qr-poster-footer {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    border-top: 1px solid #E8E0D8;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #6B5B4F;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .qr-instructions-list li {
@@ -648,15 +695,33 @@
         border: none;
         box-shadow: none;
     }
+    #qr-poster {
+        max-width: 100%;
+        width: 100%;
+        padding: 1rem;
+    }
     .qr-poster-preview {
         border: none;
         box-shadow: none;
         border-radius: 0;
-        padding: 2rem;
+        padding: 2.5rem;
         max-width: 100%;
+        background: #fff !important;
+    }
+    .qr-poster-grid {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 2rem !important;
+    }
+    .qr-code-img {
+        max-width: 250px !important;
     }
     .qr-actions {
         display: none !important;
+    }
+    .qr-poster-footer {
+        margin-top: 1.5rem;
+        padding: 0;
+        border-top: 1px solid #E8E0D8;
     }
 }
 
@@ -1055,7 +1120,7 @@
 }
 
 .login-hint strong {
-    color: #4A2C2A;
+    color: #1A1412;
     font-weight: 600;
 }
 

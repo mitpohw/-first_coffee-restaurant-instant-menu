@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#4A2C2A">
+    <meta name="theme-color" content="#1A1412">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="description" content="First Coffee Restaurant — Instant Digital Menu">
@@ -11,20 +11,47 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90' font-family='serif'>☕</text></svg>">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/responsive.css">
+    <!-- Tailwind CSS (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Motion One (Framer Motion standalone equivalent) -->
+    <script src="https://cdn.jsdelivr.net/npm/@motionone/dom@10.18.0/dist/motion-one.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
+    <script>
+        if (window.tailwind) {
+            window.tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            'charcoal': '#1A1412',
+                            'champagne': '#D4A373',
+                            'champagne-light': '#E6C99D',
+                            'ivory': '#FAF7F2',
+                            'ivory-dark': '#2C1810'
+                        },
+                        fontFamily: {
+                            'serif-display': ['Playfair Display', 'Georgia', 'serif'],
+                            'sans-body': ['Inter', 'system-ui', 'sans-serif']
+                        }
+                    }
+                }
+            };
+        }
+    </script></head>
 <body>
     <div id="app">
         <!-- Customer Menu View -->
         <div id="menu-view" class="view">
             <header class="site-header">
                 <div class="container">
-                    <div class="brand">
-                        <h1 class="brand-name">First Coffee</h1>
-                        <p class="brand-tagline">Restaurant</p>
+                <div class="brand">
+                    <div class="brand-logo" aria-hidden="true">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
                     </div>
+                    <h1 class="brand-name">First Coffee</h1>
+                    <p class="brand-tagline">Restaurant</p>
+                </div>
                     <div class="header-actions">
                         <button id="search-toggle" class="icon-btn" aria-label="Search menu" title="Search">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -50,9 +77,37 @@
 
             <nav id="category-nav" class="category-nav" aria-label="Menu categories">
                 <div class="category-nav-inner">
-                    <button class="cat-btn active" data-cat="all">All</button>
+                    <button class="cat-btn active" data-cat="all">All Menu</button>
                 </div>
             </nav>
+
+            <!-- Advanced Filters -->
+            <div id="filter-bar" class="filter-bar" hidden>
+                <div class="container">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label class="filter-label">Dietary</label>
+                            <div class="filter-chips">
+                                <button class="filter-chip active" data-filter="dietary" data-value="all">All</button>
+                                <button class="filter-chip" data-filter="dietary" data-value="vegan">Vegan</button>
+                                <button class="filter-chip" data-filter="dietary" data-value="vegetarian">Vegetarian</button>
+                                <button class="filter-chip" data-filter="dietary" data-value="gluten-free">Gluten-Free</button>
+                                <button class="filter-chip" data-filter="dietary" data-value="dairy-free">Dairy-Free</button>
+                            </div>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Price Range</label>
+                            <div class="filter-chips">
+                                <button class="filter-chip active" data-filter="price" data-value="all">All</button>
+                                <button class="filter-chip" data-filter="price" data-value="0-100">Under 100 ETB</button>
+                                <button class="filter-chip" data-filter="price" data-value="100-250">100 - 250 ETB</button>
+                                <button class="filter-chip" data-filter="price" data-value="250+">250+ ETB</button>
+                            </div>
+                        </div>
+                        <button id="clear-filters" class="clear-filters-btn">Clear All</button>
+                    </div>
+                </div>
+            </div>
 
             <main id="menu-main" class="menu-main">
                 <div class="container">
@@ -80,107 +135,9 @@
                         <div class="footer-social" id="footer-social"></div>
                     </div>
                     <p class="footer-copy">&copy; <span id="current-year"></span> First Coffee Restaurant</p>
+                    <p class="footer-powered">Powered by: Neon solutions-michael luel</p>
                 </div>
             </footer>
-        </div>
-
-        <!-- Admin View -->
-        <div id="admin-view" class="view" hidden>
-            <header class="admin-header">
-                <div class="container">
-                    <div class="admin-title-row">
-                        <h1>Menu Manager</h1>
-                        <button id="admin-preview" class="btn btn-secondary">Preview</button>
-                        <button id="admin-exit" class="icon-btn" aria-label="Exit admin" title="Exit">
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        </button>
-                    </div>
-                </div>
-            </header>
-
-            <main class="admin-main">
-                <div class="container">
-                    <div class="admin-grid">
-                        <!-- Restaurant Settings -->
-                        <section class="admin-card">
-                            <h2>Restaurant</h2>
-                            <form id="restaurant-form" class="form">
-                                <div class="form-group"><label for="r-name">Name</label><input id="r-name" type="text"></div>
-                                <div class="form-group"><label for="r-tagline">Tagline</label><input id="r-tagline" type="text"></div>
-                                <div class="form-group"><label for="r-address">Address</label><input id="r-address" type="text"></div>
-                                <div class="form-group"><label for="r-phone">Phone</label><input id="r-phone" type="tel"></div>
-                                <div class="form-group"><label for="r-hours">Hours</label><input id="r-hours" type="text"></div>
-                                <div class="form-group"><label for="r-currency">Currency</label><input id="r-currency" type="text" maxlength="5"></div>
-                                <div class="form-group"><label for="r-social">Social URL (optional)</label><input id="r-social" type="url"></div>
-                                <button type="submit" class="btn btn-primary">Save Restaurant</button>
-                            </form>
-                        </section>
-
-                        <!-- QR Code -->
-                        <section class="admin-card">
-                            <h2>QR Code</h2>
-                            <div class="qr-section">
-                                <div class="form-group">
-                                    <label for="qr-url">Menu URL</label>
-                                    <input id="qr-url" type="url">
-                                </div>
-                                <div class="qr-options">
-                                    <div class="form-group"><label for="qr-size">Size</label><input id="qr-size" type="number" value="400" min="100" max="1200" step="50"></div>
-                                    <div class="form-group"><label for="qr-margin">Margin</label><input id="qr-margin" type="number" value="2" min="0" max="10"></div>
-                                    <div class="form-group"><label for="qr-fg">Foreground</label><input id="qr-fg" type="color" value="#4A2C2A"></div>
-                                    <div class="form-group"><label for="qr-bg">Background</label><input id="qr-bg" type="color" value="#FFFFFF"></div>
-                                </div>
-                                <button id="qr-generate" class="btn btn-primary">Generate QR</button>
-                                <div id="qr-preview-wrap" class="qr-preview-wrap" hidden>
-                                    <img id="qr-preview-img" alt="QR Code preview">
-                                    <p id="qr-fallback-url" class="qr-fallback"></p>
-                                </div>
-                                <div class="qr-actions" id="qr-actions" hidden>
-                                    <button id="qr-download" class="btn btn-secondary">Download PNG</button>
-                                    <button id="qr-copy-url" class="btn btn-secondary">Copy URL</button>
-                                    <button id="qr-print" class="btn btn-secondary">Print Poster</button>
-                                </div>
-                            </div>
-                        </section>
-
-                        <!-- Categories -->
-                        <section class="admin-card">
-                            <div class="card-header-row">
-                                <h2>Categories</h2>
-                                <button id="add-category" class="btn btn-primary btn-sm">+ Add</button>
-                            </div>
-                            <ul id="category-list" class="admin-list"></ul>
-                        </section>
-
-                        <!-- Items -->
-                        <section class="admin-card">
-                            <div class="card-header-row">
-                                <h2>Menu Items</h2>
-                                <button id="add-item" class="btn btn-primary btn-sm">+ Add Item</button>
-                            </div>
-                            <div class="form-group" style="margin-top:0.75rem">
-                                <select id="item-category-filter">
-                                    <option value="all">All Categories</option>
-                                </select>
-                            </div>
-                            <ul id="item-list" class="admin-list"></ul>
-                        </section>
-
-                        <!-- Import / Export -->
-                        <section class="admin-card">
-                            <h2>Data</h2>
-                            <div class="admin-actions-row">
-                                <button id="export-data" class="btn btn-secondary">Export JSON</button>
-                                <label class="btn btn-secondary file-label">
-                                    Import JSON
-                                    <input type="file" id="import-data" accept="application/json" hidden>
-                                </label>
-                                <button id="reset-data" class="btn btn-danger">Reset Demo</button>
-                            </div>
-                        </section>
-                    </div>
-                </div>
-            </main>
         </div>
 
         <!-- Item Detail Modal -->
@@ -194,25 +151,20 @@
             </div>
         </div>
 
+        <!-- Image Zoom Overlay -->
+        <div id="image-zoom" class="image-zoom-overlay" aria-hidden="true">
+            <img id="zoom-img" alt="" src="">
+        </div>
+
         <!-- Toast -->
         <div id="toast" class="toast" hidden role="status" aria-live="polite"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js">
-</script>
-    <script src="js/data.js">
-</script>
-    <script src="js/utils.js">
-</script>
-    <script src="js/storage.js">
-</script>
-    <script src="js/menu.js">
-</script>
-    <script src="js/admin.js">
-</script>
-    <script src="js/qr.js">
-</script>
-    <script src="js/app.js">
-</script>
+    <script src="js/data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/storage.js"></script>
+    <script src="js/menu.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>

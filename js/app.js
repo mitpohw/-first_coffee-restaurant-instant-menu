@@ -21,7 +21,6 @@ const App = {
         document.getElementById('search-input')?.addEventListener('input', Utils.debounce((e) => {
             Menu.searchQuery = e.target.value;
             Menu.renderItems();
-            Menu.renderFeatured();
         }, 200));
         document.getElementById('admin-toggle')?.addEventListener('click', () => {
             window.location.href = 'admin-login.html';
@@ -110,7 +109,6 @@ const App = {
         if (input) input.value = '';
         Menu.searchQuery = '';
         Menu.renderItems();
-        Menu.renderFeatured();
     },
 
     toastTimeout: null,

@@ -68,7 +68,6 @@ const Menu = {
 
     render() {
         this.renderCategories();
-        this.renderFeatured();
         this.renderItems();
         this.renderFooter();
         this.initScrollEffects();
@@ -95,7 +94,6 @@ const Menu = {
                 });
 
                 this.renderItems();
-                this.renderFeatured();
                 this.updateFilterVisibility();
                 this.scrollToTop();
             });
@@ -108,7 +106,6 @@ const Menu = {
                 this.activeFilters.price = 'all';
                 document.querySelectorAll('.filter-chip').forEach(c => c.classList.toggle('active', c.dataset.value === 'all'));
                 this.renderItems();
-                this.renderFeatured();
                 this.updateFilterVisibility();
             });
         }
@@ -204,7 +201,6 @@ const Menu = {
             activeBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
         this.renderItems();
-        this.renderFeatured();
         this.updateFilterVisibility();
         if (catId !== 'all') {
             const section = document.getElementById(catId);
